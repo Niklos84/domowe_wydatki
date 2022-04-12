@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, abort,make_response, request
-from models_f import finance
+from flask import Flask, jsonify, abort, make_response, Response, request
+from models import finance
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_key"
@@ -38,7 +38,7 @@ def create_finance_record():
         'amount': request.json['amount']
     }
     finance.create(new_record)
-    return jsonify({'new_record': new_record}), 201
+    return Response(status=201)
 
 @app.errorhandler(400)
 def bad_request(error):
@@ -49,7 +49,7 @@ def delete_finance_record(finance_id):
     result = finance.delete(finance_id)
     if not result:
         abort(404)
-    return jsonify({'result': result})
+    return Response(status=200)
 
 @app.route("/finance/<int:finance_id>", methods=["PUT"])
 def update_finance_record(finance_id):
@@ -66,15 +66,15 @@ def update_finance_record(finance_id):
         'amount' in data and not isinstance(data.get('amount'), str)
     ]):
         abort(400)
-    record = {
+    updated_record = {
         'id': data.get('id', record['id']),
         'date': data.get('date', record['date']),
         'category': data.get('category', record['category']),
         'description': data.get('description', record['description']),
         'amount': data.get('amount', record['amount'])
     }
-    finance.update(finance_id, record)
-    return jsonify({'record': record})
+    finance.update(finance_id, updated_record)
+    return jsonify({'record': updated_record})
 
 if __name__ == "__main__":
     app.run(debug=True)
